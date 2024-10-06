@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document to XML Converter</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 50px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .btn-primary {
+            margin-top: 10px;
+        }
+        .conversion-list {
+            margin-top: 20px;
+        }
+        .conversion-item {
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+        }
+        .conversion-item>a {
+            text-decoration: none;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .loading img {
+            width: 50px;
+        }
+        .btn-gradient {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        .btn-delete {
+            background: #dc3545;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer; /* Add cursor pointer for better UX */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center">Kriyadocs Word To XML Converter</h2>
+        <form method="POST" action="/upload" enctype="multipart/form-data" id="upload-form" class="mt-4">
+            <div class="form-group">
+                <label for="files">Choose document files:</label>
+                <input type="file" class="form-control" id="files" name="files" multiple required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block btn-gradient" id="upload-btn">Upload and Convert</button>
+        </form>
+        <div class="loading" id="loading">
+            <img src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/0.16.1/images/loader-large.gif" alt="Loading...">
+            <p>Converting files...</p>
+        </div>
+        <div class="conversion-list" id="conversion-list">
+            {% for item in conversions %}
+            <div class="conversion-item">
+                <p>{{ item }}</p>
+                <a href="#" class="btn-gradient open-folder-btn">Open Folder</a>
+                <button class="btn-delete" data-filename="{{ item }}">Delete</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#upload-form').submit(function(event) {
+                $('#upload-btn').hide();
+                $('#loading').show();
+            });
+
+            $('.btn-delete').click(function() {
+                const filename = $(this).data('filename');
+                const listItem = $(this).closest('.conversion-item');
+                $.ajax({
+                    url: '/delete/' + filename,
+                    type: 'POST',
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            listItem.remove();
+                        } else {
+                            alert('Error: ' + response.status);
+                        }
+                    },
+                    error: function() {
+                        alert('An error occurred while trying to delete the file.');
+                    }
+                });
+            });
+
+            $('.open-folder-btn').click(function() {
+                $.ajax({
+                    url: '/open-folder',
+                    type: 'GET',
+                });
+            });
+        });
+    </script>
+</body>
+</html>
